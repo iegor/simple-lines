@@ -100,20 +100,22 @@ field_cell *g_selectedcell;
 // This will add couple of random balls into field
 void add_balls_onto_field(void) {
 	int cl;
+	int tries=0;
 	for(cl=0; cl < PLAY_BALLS_SPAWN_Q;) {
 		int cx=rand() % 20;
 		int cy=rand() % 20;
-		
+		++tries;
 		if(g_gamefield.fld[cx][cy].tag == FALSE) {
 			// occupy cell and set a ball with a random ball
 			OCCUPY_AND_RAND(g_gamefield.fld[cx][cy]);
 			++cl;
 		}
 	}
+	printf("spended (%i) tries.\n", tries);
 }
 
 // This will update play field//ball color
-void update_play_field(void) {
+//void update_play_field(void) {
 // 	int fld_x;
 // 	int fld_y;
 // 	field_cell *fcl;
@@ -125,8 +127,8 @@ void update_play_field(void) {
 // 	}
 
 	// now just add balls on random cells
-	add_balls_onto_field();
-}
+	//add_balls_onto_field();
+//}
 
 // This will init all logics
 void init_logics(void) {
@@ -146,7 +148,7 @@ void init_logics(void) {
 	}
 
 	// now spawn some balls
-	update_play_field();
+	//update_play_field();
 	add_balls_onto_field();
 }
 
@@ -181,7 +183,7 @@ void trace_and_destroy_cells_on_field(int clx, int cly) {
 	boomlist[boom_count++] = &g_gamefield.fld[clx][cly];
 
 	// For negative X
-	for(cli_x=clx-1, cli_y=cly; cli_x > cl_x_nmax; --cli_x) {
+	for(cli_x=clx-1, cli_y=cly; cli_x >= cl_x_nmax; --cli_x) {
 		cl_test = &g_gamefield.fld[cli_x][cly];
 		// if there is no ball, then break
 		if(cl_test->tag == FALSE)
@@ -195,7 +197,7 @@ void trace_and_destroy_cells_on_field(int clx, int cly) {
 		boomlist[boom_count++]=cl_test;	// add to list
 	}
 	// For positive X
-	for(cli_x=clx+1, cli_y=cly; cli_x < cl_x_pmax; ++cli_x) {
+	for(cli_x=clx+1, cli_y=cly; cli_x <= cl_x_pmax; ++cli_x) {
 		cl_test = &g_gamefield.fld[cli_x][cly];
 		// if there is no ball, then break
 		if(cl_test->tag == FALSE)
@@ -209,7 +211,7 @@ void trace_and_destroy_cells_on_field(int clx, int cly) {
 		boomlist[boom_count++]=cl_test;	// add to list
 	}
 	// For negative Y// add to list
-	for(cli_y=cly-1, cli_x=clx; cli_y > cl_y_nmax; --cli_y) {
+	for(cli_y=cly-1, cli_x=clx; cli_y >= cl_y_nmax; --cli_y) {
 		cl_test = &g_gamefield.fld[clx][cli_y];
 		// if there is no ball, then break
 		if(cl_test->tag == FALSE)
@@ -223,7 +225,7 @@ void trace_and_destroy_cells_on_field(int clx, int cly) {
 		boomlist[boom_count++]=cl_test;	// add to list
 	}
 	// For positive Y
-	for(cli_y=cly+1, cli_x=clx; cli_y < cl_y_pmax; ++cli_y) {
+	for(cli_y=cly+1, cli_x=clx; cli_y <= cl_y_pmax; ++cli_y) {
 		cl_test = &g_gamefield.fld[clx][cli_y];
 		// if there is no ball, then break
 		if(cl_test->tag == FALSE)
@@ -239,12 +241,12 @@ void trace_and_destroy_cells_on_field(int clx, int cly) {
 
 	// Now check if we reached quantity that exceedes minimum needed for BA-DA-BOOM!!!
 	if(boom_count >= PLAY_BALLS_BOOM_MIN_Q) {
-    //inflate global ball counter
+		printf("boom: %i balls.\n", boom_count);
 		//g_game_balls_counter -= boom_count;
 		//Now traverse boom list
 		//CHEAT #1: to index boom list with boom_count var we need to decrease it by 1
 		while(--boom_count) {
-			cl_test=boomlist[boom_count--];
+			cl_test=boomlist[boom_count];
 			//clear ball from cell
 			SET_CELL_FREE(*cl_test);
 		}
@@ -279,7 +281,8 @@ void move_ball_on_field(int clx, int cly) {
 	trace_and_destroy_cells_on_field(clx, cly);
 
 	//now update field
-	update_play_field();
+	//update_play_field();
+	add_balls_onto_field();
 
 	g_selectedcell = NULL;
 }
