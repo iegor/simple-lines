@@ -81,16 +81,17 @@ field_cell *g_selectedcell;
 
 #define OCCUPY_AND_RAND(cell)\
 	if(((field_cell*)&cell) != NULL) {\
+    if(((field_cell*)&cell)->tag == FALSE) {\
 		(((field_cell*)&cell)->tag) = TRUE; \
 		(((field_cell*)&cell)->color) = 1+rand()%3;\
-		printf("cell (%X) occupied (%i): %i\n", ((unsigned int)&cell), (((field_cell*)&cell)->tag), ((field_cell*)&cell)->color); }
-	
+		printf("cell (%X) occupied (%i): %i\n", ((unsigned int)&cell), (((field_cell*)&cell)->tag), ((field_cell*)&cell)->color); } }
+
 #define SET_CELL_FREE(cell)\
 	if(((field_cell*)&cell) != NULL) {\
 		((field_cell*)&cell)->tag = FALSE;\
 		((field_cell*)&cell)->color = 0x00;\
 		printf("cell (%X) freed (%i): %i\n", ((unsigned int)&cell), (((field_cell*)&cell)->tag), ((field_cell*)&cell)->color); }
-		
+
 #define SWAP_BALL(cl_src, cl_dest)\
 	if((((field_cell*)&cl_src) != NULL) && (((field_cell*)&cl_dest) != NULL)) {\
 		((field_cell*)&cl_dest)->tag = ((field_cell*)&cl_src)->tag;\
@@ -98,39 +99,30 @@ field_cell *g_selectedcell;
 
 // This will add couple of random balls into field
 void add_balls_onto_field(void) {
-	int cl_spwn = 0;
-	for(cl_spwn=0; cl_spwn < PLAY_BALLS_SPAWN_Q; ++cl_spwn) {
-		// occupy cell and set a ball with a random ball
-		OCCUPY_AND_RAND(*g_spawncells[cl_spwn]);
+	int cl;
+	for(cl=0; cl < PLAY_BALLS_SPAWN_Q;) {
+		int cx=rand() % 20;
+		int cy=rand() % 20;
+		
+		if(g_gamefield.fld[cx][cy].tag == FALSE) {
+			// occupy cell and set a ball with a random ball
+			OCCUPY_AND_RAND(g_gamefield.fld[cx][cy]);
+			++cl;
+		}
 	}
 }
 
 // This will update play field//ball color
 void update_play_field(void) {
-	int fld_x;
-	int fld_y;
-	field_cell *fcl = NULL;
-	//counter for cells that will spawn
-	int cl_spwn;
-
-	//srand(time(NULL));
+// 	int fld_x;
+// 	int fld_y;
+// 	field_cell *fcl;
 
 	// Parse through field
-	for(fld_y=0; fld_y < PLAY_FIELD_SZ_Y; ++fld_y) {
-		for(fld_x=0; fld_x < PLAY_FIELD_SZ_X; ++fld_x) {
-			int ccx = rand() % 20;
-			int ccy = rand() % 20;
-			fcl = &g_gamefield.fld[ccx][ccy];
-			// Check if current cell is not occupied.
-			if(fcl->tag == FALSE) {
-				if(cl_spwn < PLAY_BALLS_SPAWN_Q) {
-					printf("Will spawn in: x(%i) y(%i)\n", ccx, ccy);
-					//and if not add it to free cells list, those will be cells where balls will spawn.
-					g_spawncells[cl_spwn++] = fcl;
-				}
-			}
-		}
-	}
+// 	for(fld_y=0; fld_y < PLAY_FIELD_SZ_Y; ++fld_y) {
+// 		for(fld_x=0; fld_x < PLAY_FIELD_SZ_X; ++fld_x) {
+// 		}
+// 	}
 
 	// now just add balls on random cells
 	add_balls_onto_field();
@@ -189,7 +181,7 @@ void trace_and_destroy_cells_on_field(int clx, int cly) {
 	boomlist[boom_count++] = &g_gamefield.fld[clx][cly];
 
 	// For negative X
-	for(cli_x=clx; cli_x > cl_x_nmax; --cli_x) {
+	for(cli_x=clx-1, cli_y=cly; cli_x > cl_x_nmax; --cli_x) {
 		cl_test = &g_gamefield.fld[cli_x][cly];
 		// if there is no ball, then break
 		if(cl_test->tag == FALSE)
@@ -198,12 +190,12 @@ void trace_and_destroy_cells_on_field(int clx, int cly) {
 		if(cl_test->color != g_selectedcell->color)
 			break;
 		// do not add selected cell
-		if(cl_test == g_selectedcell)
-			continue;
+		//if(cl_test == g_selectedcell)
+			//continue;
 		boomlist[boom_count++]=cl_test;	// add to list
 	}
 	// For positive X
-	for(cli_x=clx; cli_x < cl_x_pmax; ++cli_x) {
+	for(cli_x=clx+1, cli_y=cly; cli_x < cl_x_pmax; ++cli_x) {
 		cl_test = &g_gamefield.fld[cli_x][cly];
 		// if there is no ball, then break
 		if(cl_test->tag == FALSE)
@@ -212,12 +204,12 @@ void trace_and_destroy_cells_on_field(int clx, int cly) {
 		if(cl_test->color != g_selectedcell->color)
 			break;
 		// do not add selected cell
-		if(cl_test == g_selectedcell)
-			continue;
+		//if(cl_test == g_selectedcell)
+			//continue;
 		boomlist[boom_count++]=cl_test;	// add to list
 	}
 	// For negative Y// add to list
-	for(cli_y=cly; cli_y > cl_y_nmax; --cli_y) {
+	for(cli_y=cly-1, cli_x=clx; cli_y > cl_y_nmax; --cli_y) {
 		cl_test = &g_gamefield.fld[clx][cli_y];
 		// if there is no ball, then break
 		if(cl_test->tag == FALSE)
@@ -226,12 +218,12 @@ void trace_and_destroy_cells_on_field(int clx, int cly) {
 		if(cl_test->color != g_selectedcell->color)
 			break;
 		// do not add selected cell
-		if(cl_test == g_selectedcell)
-			continue;
+		//if(cl_test == g_selectedcell)
+			//continue;
 		boomlist[boom_count++]=cl_test;	// add to list
 	}
 	// For positive Y
-	for(cli_y=cly; cli_y < cl_y_pmax; ++cli_y) {
+	for(cli_y=cly+1, cli_x=clx; cli_y < cl_y_pmax; ++cli_y) {
 		cl_test = &g_gamefield.fld[clx][cli_y];
 		// if there is no ball, then break
 		if(cl_test->tag == FALSE)
@@ -240,8 +232,8 @@ void trace_and_destroy_cells_on_field(int clx, int cly) {
 		if(cl_test->color != g_selectedcell->color)
 			break;
 		// do not add selected cell
-		if(cl_test == g_selectedcell)
-			continue;
+		//if(cl_test == g_selectedcell)
+			//continue;
 		boomlist[boom_count++]=cl_test;	// add to list
 	}
 
@@ -252,8 +244,9 @@ void trace_and_destroy_cells_on_field(int clx, int cly) {
 		//Now traverse boom list
 		//CHEAT #1: to index boom list with boom_count var we need to decrease it by 1
 		while(--boom_count) {
+			cl_test=boomlist[boom_count--];
 			//clear ball from cell
-			SET_CELL_FREE(*boomlist[boom_count--]);
+			SET_CELL_FREE(*cl_test);
 		}
 
 		//if selected cell booms it's ball then no
@@ -287,7 +280,7 @@ void move_ball_on_field(int clx, int cly) {
 
 	//now update field
 	update_play_field();
-	
+
 	g_selectedcell = NULL;
 }
 
