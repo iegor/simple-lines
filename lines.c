@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <GL/glx.h>
 #include <GL/gl.h>
+//#include <GL/glut.h>
 //#include <math.h>
 #include <X11/X.h>
 #include <X11/Xlib.h>
@@ -69,6 +70,12 @@ typedef struct {
 typedef struct {
 	unsigned char tag; // is cell occupied with a ball
 	unsigned char color;
+#if defined VISUAL_DEBUG
+	// marker for "added to destroy list" condition
+	// to trace visually what is happening in trace
+	// method, the finit result
+	unsigned char tag_todestroy;
+#endif
 } field_cell;
 
 typedef struct {
@@ -157,6 +164,21 @@ void select_ball_on_field(int clx, int cly) {
 	g_selectedcell = &g_gamefield.fld[clx][cly];
 }
 
+// Special function that will handle adding cells to
+// "destroy" lists
+void put_cell_to_boom_list(field_cell *l[], int* counter, field_cell *cl) {
+	l[(*counter)++]=cl;
+}
+
+/**
+ * method: It will trace all adjacent cells on field with same color
+ * and add them into destroy list.
+ * This method works recursively traveling each cell and checking it
+ * and it's neighbours
+ */
+void trace_and_destroy(int clx, int cly) {
+}
+
 // This will trace and collect all cells with the same color balls
 // for target cell
 void trace_and_destroy_cells_on_field(int clx, int cly) {
@@ -180,7 +202,8 @@ void trace_and_destroy_cells_on_field(int clx, int cly) {
 	field_cell *cl_test;
 
 	// add target cell to list
-	boomlist[boom_count++] = &g_gamefield.fld[clx][cly];
+	put_cell_to_boom_list(boomlist, &boom_count, &g_gamefield.fld[clx][cly]);
+	//boomlist[boom_count++] = &g_gamefield.fld[clx][cly];
 
 	// For negative X
 	for(cli_x=clx-1, cli_y=cly; cli_x >= cl_x_nmax; --cli_x) {
@@ -194,7 +217,7 @@ void trace_and_destroy_cells_on_field(int clx, int cly) {
 		// do not add selected cell
 		//if(cl_test == g_selectedcell)
 			//continue;
-		boomlist[boom_count++]=cl_test;	// add to list
+		put_cell_to_boom_list(boomlist, &boom_count, cl_test);	// add to list
 	}
 	// For positive X
 	for(cli_x=clx+1, cli_y=cly; cli_x <= cl_x_pmax; ++cli_x) {
@@ -208,7 +231,7 @@ void trace_and_destroy_cells_on_field(int clx, int cly) {
 		// do not add selected cell
 		//if(cl_test == g_selectedcell)
 			//continue;
-		boomlist[boom_count++]=cl_test;	// add to list
+		put_cell_to_boom_list(boomlist, &boom_count, cl_test);	// add to list
 	}
 	// For negative Y// add to list
 	for(cli_y=cly-1, cli_x=clx; cli_y >= cl_y_nmax; --cli_y) {
@@ -222,7 +245,7 @@ void trace_and_destroy_cells_on_field(int clx, int cly) {
 		// do not add selected cell
 		//if(cl_test == g_selectedcell)
 			//continue;
-		boomlist[boom_count++]=cl_test;	// add to list
+		put_cell_to_boom_list(boomlist, &boom_count, cl_test);	// add to list
 	}
 	// For positive Y
 	for(cli_y=cly+1, cli_x=clx; cli_y <= cl_y_pmax; ++cli_y) {
@@ -236,7 +259,7 @@ void trace_and_destroy_cells_on_field(int clx, int cly) {
 		// do not add selected cell
 		//if(cl_test == g_selectedcell)
 			//continue;
-		boomlist[boom_count++]=cl_test;	// add to list
+		put_cell_to_boom_list(boomlist, &boom_count, cl_test);	// add to list
 	}
 
 	// Now check if we reached quantity that exceedes minimum needed for BA-DA-BOOM!!!
@@ -245,8 +268,11 @@ void trace_and_destroy_cells_on_field(int clx, int cly) {
 		//g_game_balls_counter -= boom_count;
 		//Now traverse boom list
 		//CHEAT #1: to index boom list with boom_count var we need to decrease it by 1
-		while(--boom_count) {
+		while(--boom_count >= 0) {
 			cl_test=boomlist[boom_count];
+#if defined (VISUAL_DEBUG)
+			cl_test->tag_todestroy = TRUE;
+#endif
 			//clear ball from cell
 			SET_CELL_FREE(*cl_test);
 		}
@@ -277,7 +303,7 @@ void move_ball_on_field(int clx, int cly) {
 	// to calculate some logics with it ahead.
 	g_selectedcell = cl;
 
-	//Try to destroy nearby cells
+	//check nearby cells if we need to destroy some of them
 	trace_and_destroy_cells_on_field(clx, cly);
 
 	//now update field
@@ -444,6 +470,20 @@ void draw_field(void) {
 				glVertex3f(cl->x+cl->width, cl->y, 0.5f);
 				glVertex3f(cl->x, cl->y+cl->height, 0.5f);
 			}
+			
+#if defined (VISUAL_DEBUG)
+			if(cl->lcl->tag_todestroy == TRUE) {
+				glColor4f(0.8f, 0.8f, 0.0f, 1.0f);
+				glVertex3f(cl->x, cl->y, 0.4f);
+				glVertex3f(cl->x+cl->width, cl->y, 0.4f);
+				glVertex3f(cl->x+cl->width, cl->y, 0.4f);
+				glVertex3f(cl->x+cl->width, cl->y+cl->height, 0.4f);
+				glVertex3f(cl->x+cl->width, cl->y+cl->height, 0.4f);
+				glVertex3f(cl->x, cl->y+cl->height, 0.4f);
+				glVertex3f(cl->x, cl->y+cl->height, 0.4f);
+				glVertex3f(cl->x, cl->y, 0.4f);
+			}
+#endif
 			glEnd();
 		}
 	}
