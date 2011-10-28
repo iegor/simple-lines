@@ -660,6 +660,12 @@ int main(int argc, char *argv[]) {
 
 	//Initialise game gfx
 	init_game_gfx();
+	
+	// code to set window size exactly as gfx field size
+	g_gameopts.wnd_width = g_game_gfx_field.width;
+	g_gameopts.wnd_height = g_game_gfx_field.height;
+	XResizeWindow(g_dpy, g_wnd, g_gameopts.wnd_width, g_gameopts.wnd_height);
+	setup_projection();
 
 	g_app_opts.run = TRUE;
 

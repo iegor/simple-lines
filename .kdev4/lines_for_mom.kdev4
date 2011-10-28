@@ -2,12 +2,12 @@
 BuildItems=@Variant(\x00\x00\x00\t\x00\x00\x00\x00\x02\x00\x00\x00\x0b\x00\x00\x00\x00\x01\x00\x00\x00\x1a\x00l\x00i\x00n\x00e\x00s\x00_\x00f\x00o\x00r\x00_\x00m\x00o\x00m\x00\x00\x00\x0b\x00\x00\x00\x00\x02\x00\x00\x00\x1a\x00l\x00i\x00n\x00e\x00s\x00_\x00f\x00o\x00r\x00_\x00m\x00o\x00m\x00\x00\x00\x1a\x00l\x00i\x00n\x00e\x00s\x00_\x00f\x00o\x00r\x00_\x00m\x00o\x00m)
 
 [CMake]
-BuildDirs=/home/rainman/projects/RagingSquirrel/lines_for_mom/build
+BuildDirs[$e]=$HOME/projects/RagingSquirrel/lines_for_mom/build,$HOME/projects/RagingSquirrel/lines_for_mom/release
 CMakeDir=/usr/share/cmake/Modules
 Current CMake Binary=file:///usr/bin/cmake
 CurrentBuildDir=file:///home/rainman/projects/RagingSquirrel/lines_for_mom/build
 CurrentBuildType=Debug
-CurrentInstallDir=
+CurrentInstallDir=file:///usr/local
 Extra Arguments=
 ProjectRootRelative=./
 
