@@ -281,6 +281,24 @@ void trace_and_destroy_knl(int cx, int cy, lgs_field_cell *l[], int* counter) {
 			trace_and_destroy_knl(cx-1, cy, l, counter);
 		}
 	}
+	
+	// [x, y+1] case
+	if(cy+1 < PLAY_FIELD_SZ_Y) {
+		t_cl = &g_lgs_field.fld[cx][cy+1];
+		if((t_cl->tag_state & LGS_FIELDCELL_STATE_OCCUPIED) && t_cl->color == cl->color && !(t_cl->tag_state & LGS_FIELDCELL_STATE_COLLECTED)) {
+			put_cell_to_boom_list(l, counter, t_cl);
+			trace_and_destroy_knl(cx, cy+1, l, counter);
+		}
+	}
+	
+	// [x, y-1] case
+	if(cy-1 >= 0) {
+		t_cl = &g_lgs_field.fld[cx][cy-1];
+		if((t_cl->tag_state & LGS_FIELDCELL_STATE_OCCUPIED) && t_cl->color == cl->color && !(t_cl->tag_state & LGS_FIELDCELL_STATE_COLLECTED)) {
+			put_cell_to_boom_list(l, counter, t_cl);
+			trace_and_destroy_knl(cx, cy-1, l, counter);
+		}
+	}
 }
 
 /**
@@ -734,8 +752,8 @@ void game_update(time_t tm) {
 #if defined (VISUAL_DEBUG)
 				// handle scorch marks
 				if(cl->gcl->scorchmark == TRUE) {
-					cl->gcl->a_scorchmark -= 0.01f;
-					if(cl->gcl->a_scorchmark <= 0.01f) {
+					cl->gcl->a_scorchmark -= 0.001f;
+					if(cl->gcl->a_scorchmark <= 0.001f) {
 						cl->gcl->scorchmark = FALSE;
 					}
 				}
